@@ -3,18 +3,14 @@ from flask_cors import CORS
 import numpy as np
 import joblib
 from tensorflow.keras.models import load_model
-import os
 
 app = Flask(__name__)
-
-# Enable CORS only for the /predict route and restrict it to a specific origin (e.g., "https://yourfrontend.com")
-CORS(app, resources={r"/predict": {"origins": "https://heart-failure.toshankanwar.website"}})
+CORS(app)  # Enable CORS
 
 # Load model and scaler
-model = load_model("heart_disease_model.h5")
-scaler = joblib.load("scaler.pkl")
+model = load_model("model/heart_disease_model.h5")
+scaler = joblib.load("model/scaler.pkl")
 
-# Encoding maps
 sex_map = {'M': 1, 'F': 0}
 chest_pain_map = {'ATA': 0, 'NAP': 1, 'ASY': 2, 'TA': 3}
 resting_ecg_map = {'Normal': 1, 'ST': 2, 'LVH': 0}
@@ -26,7 +22,6 @@ def predict():
     data = request.get_json()
 
     try:
-        # Extract and encode input features
         features = [
             data['Age'],
             sex_map[data['Sex']],
@@ -41,11 +36,11 @@ def predict():
             st_slope_map[data['ST_Slope']]
         ]
 
-        # Preprocess and scale the input features
+        # Preprocess input
         features = np.array([features])
         features_scaled = scaler.transform(features)
 
-        # Make the prediction
+        # Predict
         prediction = model.predict(features_scaled)[0][0]
         result = "Heart Disease Risk" if prediction > 0.5 else "No Risk"
 
@@ -55,14 +50,8 @@ def predict():
         })
 
     except Exception as e:
-        # Enhanced error message
-        return jsonify({
-            "error": "An error occurred while processing your request.",
-            "message": str(e)
-        })
+        return jsonify({"error": str(e)})
 
-# Entry point for local and Render deployment
+# Run the Flask app in a serverless way
 if __name__ == '__main__':
-    # Get the port number from the environment variable or default to 10000
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
