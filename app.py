@@ -1,19 +1,18 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 import numpy as np
 import joblib
 from tensorflow.keras.models import load_model
+import os
 
 app = Flask(__name__)
-
-# Enable CORS for the app
-CORS(app)  # This will allow all origins. You can customize it as needed.
+CORS(app)  # Enable CORS for all routes
 
 # Load model and scaler
 model = load_model("heart_disease_model.h5")
 scaler = joblib.load("scaler.pkl")
 
-# Label encoding mappings (same as training)
+# Encoding maps
 sex_map = {'M': 1, 'F': 0}
 chest_pain_map = {'ATA': 0, 'NAP': 1, 'ASY': 2, 'TA': 3}
 resting_ecg_map = {'Normal': 1, 'ST': 2, 'LVH': 0}
@@ -25,7 +24,6 @@ def predict():
     data = request.get_json()
 
     try:
-        # Extract and encode input features
         features = [
             data['Age'],
             sex_map[data['Sex']],
@@ -40,7 +38,7 @@ def predict():
             st_slope_map[data['ST_Slope']]
         ]
 
-        # Preprocess input
+        # Scale features
         features = np.array([features])
         features_scaled = scaler.transform(features)
 
@@ -56,5 +54,7 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+# Required for both local & Render deployment
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
