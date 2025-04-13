@@ -6,7 +6,9 @@ from tensorflow.keras.models import load_model
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+
+# Enable CORS only for the /predict route and restrict it to a specific origin (e.g., "https://yourfrontend.com")
+CORS(app, resources={r"/predict": {"origins": "https://hfailure-backend-3.onrender.com"}})
 
 # Load model and scaler
 model = load_model("heart_disease_model.h5")
@@ -24,6 +26,7 @@ def predict():
     data = request.get_json()
 
     try:
+        # Extract and encode input features
         features = [
             data['Age'],
             sex_map[data['Sex']],
@@ -38,11 +41,11 @@ def predict():
             st_slope_map[data['ST_Slope']]
         ]
 
-        # Scale features
+        # Preprocess and scale the input features
         features = np.array([features])
         features_scaled = scaler.transform(features)
 
-        # Predict
+        # Make the prediction
         prediction = model.predict(features_scaled)[0][0]
         result = "Heart Disease Risk" if prediction > 0.5 else "No Risk"
 
@@ -52,9 +55,14 @@ def predict():
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)})
+        # Enhanced error message
+        return jsonify({
+            "error": "An error occurred while processing your request.",
+            "message": str(e)
+        })
 
-# Required for both local & Render deployment
+# Entry point for local and Render deployment
 if __name__ == '__main__':
+    # Get the port number from the environment variable or default to 10000
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
