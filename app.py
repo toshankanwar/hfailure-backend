@@ -19,7 +19,7 @@ resting_ecg_map = {'Normal': 1, 'ST': 2, 'LVH': 0}
 exercise_angina_map = {'N': 0, 'Y': 1}
 st_slope_map = {'Up': 2, 'Flat': 1, 'Down': 0}
 
-@app.route('/', methods=['POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
 
