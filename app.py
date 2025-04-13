@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 
 # Enable CORS only for the /predict route and restrict it to a specific origin (e.g., "https://yourfrontend.com")
-CORS(app, resources={r"/predict": {"origins": "https://hfailure-backend-3.onrender.com"}})
+CORS(app, resources={r"/predict": {"origins": "https://heart-failure.toshankanwar.website"}})
 
 # Load model and scaler
 model = load_model("heart_disease_model.h5")
