@@ -8,8 +8,8 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS
 
 # Load model and scaler
-model = load_model("model/heart_disease_model.h5")
-scaler = joblib.load("model/scaler.pkl")
+model = load_model("heart_disease_model.h5")
+scaler = joblib.load("scaler.pkl")
 
 sex_map = {'M': 1, 'F': 0}
 chest_pain_map = {'ATA': 0, 'NAP': 1, 'ASY': 2, 'TA': 3}
